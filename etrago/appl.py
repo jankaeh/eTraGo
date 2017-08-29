@@ -139,7 +139,6 @@ def etrago(args):
 #         #load_shedding nodes
 #         for gens in network.generators[network.generators.carrier == 'load shedding']:
 #==============================================================================   
-         
         # set lines to be extendable
         network.lines.s_nom_extendable == True
         network.lines.s_nom_min= network.lines.s_nom
