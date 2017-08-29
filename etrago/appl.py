@@ -39,7 +39,7 @@ args = {'network_clustering':False,
         'branch_capacity_factor': 1, #to globally extend or lower branch capacities
         'storage_extendable':True,
         'load_shedding':True,
-        's_nom_extendable':True,
+        'lines_extendable':True,
         'generator_noise':True,
         'parallelisation':False}
 
@@ -98,52 +98,53 @@ def etrago(args):
         network.generators.control="PV"
         busmap = busmap_from_psql(network, session, scn_name=args['scn_name'])
         network = cluster_on_extra_high_voltage(network, busmap, with_time=True)
-        
-    #s_nom_extendable
-    if args['s_nom_extendable']== True:
-        
-        first_scenario = NetworkScenario(session,
-                               version=args['gridversion'],
-                               prefix=args['ormcls_prefix'],
-                               method=args['method'],
-                               start_h=args['start_h'],
-                               end_h=args['end_h'],
-                               scn_name=args['scn_name'])
-        
-        first_network = first_scenario.build_network()
-        first_network = add_coordinates(first_network)
+    
+    #s_nom_extendable    
+    if args['lines_extendable']:
           
-        first_network.lines.s_nom = first_network.lines.s_nom * args['branch_capacity_factor']
-        # add random noise to all generators with marginal_cost of 0. 
-        first_network.generators.marginal_cost[first_network.generators.marginal_cost == 0] = abs(np.random.normal(0,0.00001,sum(first_network.generators.marginal_cost == 0)))
-        
-        network.generators.marginal_cost = first_network.generators.marginal_cost
-        
-        if args['scn_name'] == 'SH Status Quo':
-            data_manipulation_sh(first_network)
-        
-        load_shedding(first_network)    
-        
-        if args['network_clustering']:
-            first_network.generators.control="PV"
-            first_busmap = busmap_from_psql(first_network, session, scn_name=args['scn_name'])
-            first_network = cluster_on_extra_high_voltage(first_network, first_busmap, with_time=True)
-       
-        # start powerflow calculations
-        x = time.time()
-        first_network.lopf(first_scenario.timeindex, solver_name=args['solver'])
-        y = time.time()
-        z = (y - x) / 60
-        
-        #load_shedding analyse 
-        #where is load shedding
 #==============================================================================
-#         # set lines to be extendable
-#         network.lines.s_nom_extendable = True
-#         network.lines.s_nom_min=network.lines.s_nom
-#         # set line costs to be higher than generator costs
-#         network.lines.capital_cost = network.generators.marginal_cost*(args['end_h']-args['start_h']+1)
-#==============================================================================
+#         first_scenario = NetworkScenario(session,
+#                                version=args['gridversion'],
+#                                prefix=args['ormcls_prefix'],
+#                                method=args['method'],
+#                                start_h=args['start_h'],
+#                                end_h=args['end_h'],
+#                                scn_name=args['scn_name'])
+#         
+#         first_network = first_scenario.build_network()
+#         first_network = add_coordinates(first_network)
+#           
+#         first_network.lines.s_nom = first_network.lines.s_nom * args['branch_capacity_factor']
+#         # add random noise to all generators with marginal_cost of 0. 
+#         first_network.generators.marginal_cost[first_network.generators.marginal_cost == 0] = abs(np.random.normal(0,0.00001,sum(first_network.generators.marginal_cost == 0)))
+#         
+#         network.generators.marginal_cost = first_network.generators.marginal_cost
+#         
+#         if args['scn_name'] == 'SH Status Quo':
+#             data_manipulation_sh(first_network)
+#         
+#         load_shedding(first_network)    
+#         
+#         if args['network_clustering']:
+#             first_network.generators.control="PV"
+#             first_busmap = busmap_from_psql(first_network, session, scn_name=args['scn_name'])
+#             first_network = cluster_on_extra_high_voltage(first_network, first_busmap, with_time=True)
+#        
+#         # start powerflow calculations
+#         x = time.time()
+#         first_network.lopf(first_scenario.timeindex, solver_name=args['solver'])
+#         y = time.time()
+#         z = (y - x) / 60
+#         
+#         #load_shedding nodes
+#         for gens in network.generators[network.generators.carrier == 'load shedding']:
+#==============================================================================   
+         
+        # set lines to be extendable
+        network.lines.s_nom_extendable == True
+        network.lines.s_nom_min= network.lines.s_nom
+        # set line costs to be  higher than generator costs
+        network.lines.capital_cost = network.generators.marginal_cost*(args['end_h']-args['start_h']+1)
 
     # parallisation
     if args['parallelisation']:
