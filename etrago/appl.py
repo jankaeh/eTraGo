@@ -20,7 +20,7 @@ from egopowerflow.tools.io import NetworkScenario
 import time
 from egopowerflow.tools.plot import (plot_line_loading, plot_stacked_gen,
                                      add_coordinates, curtailment, gen_dist,
-                                     storage_distribution, plot_lines_extendable)
+                                     storage_distribution)
 from extras.utilities import load_shedding, data_manipulation_sh, results_to_csv, parallelisation, pf_post_lopf
 from cluster.networkclustering import busmap_from_psql, cluster_on_extra_high_voltage
 
@@ -160,6 +160,23 @@ def etrago(args):
 network = etrago(args)
 
 # plots
+ #Graph of the s_nom_extendable
+def plot_lines_extendable(network, timestep=0, filename=None):
+        
+    loading = abs(((network.lines.s_nom_opt-network.lines.s_nom)/network.lines.s_nom)*100)
+        
+    # do the plotting
+    ll = network.plot(line_colors=abs(loading), line_cmap=plt.cm.jet,
+                          title="lines.s_nom_extendable")
+    
+    # add colorbar, note mappable sliced from ll by [1]
+    cb = plt.colorbar(ll[1])
+    cb.set_label('Lines.extendable in %')
+    if filename is None:
+        plt.show()
+    else:
+        plt.savefig(filename)
+        plt.close()
 
 # make a line loading plot
 plot_line_loading(network)
