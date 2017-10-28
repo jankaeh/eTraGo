@@ -20,7 +20,7 @@ from egopowerflow.tools.io import NetworkScenario
 import time
 from egopowerflow.tools.plot import (plot_line_loading, plot_stacked_gen,
                                      add_coordinates, curtailment, gen_dist,
-                                     storage_distribution)
+                                     storage_distribution, plot_lines_extendable)
 from extras.utilities import load_shedding, data_manipulation_sh, results_to_csv, parallelisation, pf_post_lopf
 from cluster.networkclustering import busmap_from_psql, cluster_on_extra_high_voltage
 
@@ -30,7 +30,7 @@ args = {'network_clustering':False,
         'method': 'lopf', # lopf or pf
         'pf_post_lopf':False , #state whether you want to perform a pf after a lopf simulation
         'start_h': 2340,
-        'end_h' : 2340,
+        'end_h' : 2341,
         'scn_name': 'Status Quo',
         'ormcls_prefix': 'EgoGridPfHv', #if gridversion:'version-number' then 'EgoPfHv', if gridversion:None then 'EgoGridPfHv'
         'lpfile': 'output.lp', # state if and where you want to save pyomo's lp file: False or '/path/tofolder'
@@ -38,7 +38,7 @@ args = {'network_clustering':False,
         'solver': 'gurobi', #glpk, cplex or gurobi
         'branch_capacity_factor': 1, #to globally extend or lower branch capacities
         'storage_extendable':True,
-        'load_shedding':True,
+        'load_shedding':False,
         'lines_extendable':True,
         'generator_noise':True,
         'parallelisation':False}
@@ -60,7 +60,15 @@ def etrago(args):
 
     # add coordinates
     network = add_coordinates(network)
-
+    
+#==============================================================================
+#     # Reset s_nom of lines and transformers
+#     lines_new_s_nom = genfromtxt('list_lines_opt.csv', delimiter=',')
+#     network.lines.s_nom = lines_new_s_nom
+#     transformers_new_s_nom = genfromtxt('list_transformers_opt.csv', delimiter=',')
+#     network.transformers.s_nom = transformers_new_s_nom
+#==============================================================================
+    
     # TEMPORARY vague adjustment due to transformer bug in data processing
     #network.transformers.x=network.transformers.x*0.01
     
@@ -99,83 +107,19 @@ def etrago(args):
     
     # s_nom_extendable    
     if args['lines_extendable']:
-          
-        first_scenario = NetworkScenario(session,
-                               version=args['gridversion'],
-                               prefix=args['ormcls_prefix'],
-                               method=args['method'],
-                               start_h=args['start_h'],
-                               end_h=args['end_h'],
-                               scn_name=args['scn_name'])
         
-        first_network = first_scenario.build_network()
-        first_network = add_coordinates(first_network)
-          
-        first_network.lines.s_nom = first_network.lines.s_nom * args['branch_capacity_factor']
-
-        if args['generator_noise']:
-            # create generator noise 
-            noise_values = first_network.generators.marginal_cost + abs(np.random.normal(0,0.001,len(first_network.generators.marginal_cost)))
-            np.savetxt("noise_values.csv", noise_values, delimiter=",")
-            noise_values = genfromtxt('noise_values.csv', delimiter=',')
-            # add random noise to all generator
-            first_network.generators.marginal_cost = noise_values
-
-        if args['scn_name'] == 'SH Status Quo':
-            data_manipulation_sh(first_network)
+        # set ALL lines and transformers to be extendable
+        network.lines.s_nom_extendable = True
+        network.lines.s_nom_min = network.lines.s_nom
+        network.lines.s_nom_max = float ("+inf")
+        network.transformers.s_nom_extendable = True
+        network.transformers.s_nom_min = network.transformers.s_nom
+        network.transformers.s_nom_max = float ("+inf")
         
-        load_shedding(first_network)    
-        
-        if args['network_clustering']:
-            first_network.generators.control="PV"
-            first_busmap = busmap_from_psql(first_network, session, scn_name=args['scn_name'])
-            first_network = cluster_on_extra_high_voltage(first_network, first_busmap, with_time=True)
-       
-        # start powerflow calculations
-        x = time.time()
-        first_network.lopf(first_scenario.timeindex, solver_name=args['solver'])
-        y = time.time()
-        z = (y - x) / 60
-        
-        # Find the bues with load_shedding
-        bus_numbers=[]
-        line_numbers=[]
-        gens = first_network.generators[first_network.generators.carrier == 'load shedding']
-    
-        for i in gens.index: # go through load shedding generators (427)
-            if first_network.generators_t.p.sum()[i] !=0: #if load shedding takes place:
-                bus_number = first_network.generators.bus[i] #save the number of the bus
-                bus_numbers.append(first_network.generators.bus[i])
-                #Find the lines attached to the bus
-                for j in first_network.lines.index: #go through the lines (728)
-                    if bus_number == first_network.lines.bus0[j] or bus_number == first_network.lines.bus1[j]: #if the bus(line) equals bus(load shedding)...
-                        line_numbers.append(j) 
-
-        #Set lines (at buses with load shedding) extendable 
-        for i in line_numbers:
-            network.lines.s_nom_extendable[i] = True  
-            network.lines.s_nom_min = first_network.lines.s_nom[i] 
-            network.lines.s_nom_max = float ("+inf")
-            network.lines.capital_cost = 0
-            
-        print (len(line_numbers),"lines got extended")
-        print (bus_numbers, "had load_shedding")
-        print("line_extendable finished")                            
-        
-        # alternative: set ALL lines and transformers to be extendable
-#==============================================================================
-#         network.lines.s_nom_extendable = True
-#         network.lines.s_nom_min = network.lines.s_nom
-#         network.lines.s_nom_max = float ("+inf")
-
-#         network.transformers.s_nom_extendable = True
-#         network.transformers.s_nom_min = network.transformers.s_nom
-#         network.transformers.s_nom_max = float ("+inf")
-
-#         # set line costs to be  higher than generator costs
-#         network.lines.capital_cost = 0 #network.generators.marginal_cost*(args['end_h']-args['start_h']+1)
-# 
-#==============================================================================
+        # set line capital costs 
+        network.lines.capital_cost = 1000000 
+        network.transformers.capital_cost = 1000000
+                                
     # parallisation
     if args['parallelisation']:
         parallelisation(network, start_h=args['start_h'], end_h=args['end_h'],group_size=1, solver_name=args['solver'])
@@ -199,33 +143,23 @@ def etrago(args):
     # write PyPSA results to csv to path
     if not args['results'] == False:
         results_to_csv(network, args['results'])
+        
+    if args['lines_extendable']:
+        list_lines_opt=[]
+        list_transformers_opt=[]
+        list_lines_opt.append(round(network.lines.s_nom_opt,1))
+        list_transformers_opt.append(round(network.transformers.s_nom_opt,1))
+        # Save the list as csv
+        np.savetxt('list_lines_opt.csv',list_lines_opt, delimiter=",")
+        np.savetxt('list_transformers_opt.csv',list_transformers_opt, delimiter=",")
     
-
     return network
 
-    
+
 # execute etrago function
 network = etrago(args)
 
 # plots
-
-#Graph of the s_nom_extendable
-def plot_lines_extendable(network, timestep=0, filename=None):
-        
-    loading = abs(((network.lines.s_nom_opt-network.lines.s_nom)/network.lines.s_nom)*100)
-        
-    # do the plotting
-    ll = network.plot(line_colors=abs(loading), line_cmap=plt.cm.jet,
-                          title="lines.s_nom_extendable")
-    
-    # add colorbar, note mappable sliced from ll by [1]
-    cb = plt.colorbar(ll[1])
-    cb.set_label('Lines.extendable in %')
-    if filename is None:
-        plt.show()
-    else:
-        plt.savefig(filename)
-        plt.close()
 
 # make a line loading plot
 plot_line_loading(network)
@@ -233,7 +167,7 @@ plot_line_loading(network)
 # make a line_extendable plot
 plot_lines_extendable(network)
 
-#gen_dist(network,techs='load shedding')
+gen_dist(network)
 
 # plot stacked sum of nominal power for each generator type and timestep
 plot_stacked_gen(network, resolution="MW")
