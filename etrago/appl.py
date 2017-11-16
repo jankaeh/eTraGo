@@ -26,22 +26,22 @@ from cluster.networkclustering import busmap_from_psql, cluster_on_extra_high_vo
 
 args = {'network_clustering':False,
         'db': 'oedb', # db session
-        'gridversion':None, #None for model_draft or Version number (e.g. v0.2.10) for grid schema
+        'gridversion':'v0.2.11', #None for model_draft or Version number (e.g. v0.2.10) for grid schema
         'method': 'lopf', # lopf or pf
         'pf_post_lopf':False , #state whether you want to perform a pf after a lopf simulation
-        'start_h': 2340,
-        'end_h' : 2341,
+        'start_h': 3493,
+        'end_h' : 3683,
         'scn_name': 'Status Quo',
-        'ormcls_prefix': 'EgoGridPfHv', #if gridversion:'version-number' then 'EgoPfHv', if gridversion:None then 'EgoGridPfHv'
-        'lpfile': 'output.lp', # state if and where you want to save pyomo's lp file: False or '/path/tofolder'
+        'ormcls_prefix': 'EgoPfHv', #if gridversion:'version-number' then 'EgoPfHv', if gridversion:None then 'EgoGridPfHv'
+        'lpfile': False, # state if and where you want to save pyomo's lp file: False or '/path/tofolder'
         'results': False , # state if and where you want to save results as csv: False or '/path/tofolder'
         'solver': 'gurobi', #glpk, cplex or gurobi
         'branch_capacity_factor': 1, #to globally extend or lower branch capacities
-        'storage_extendable':True,
+        'storage_extendable':False,
         'load_shedding':False,
         'lines_extendable':True,
         'generator_noise':True,
-        'parallelisation':False}
+        'parallelisation':True}
 
 
 def etrago(args):
@@ -179,18 +179,18 @@ def plot_lines_extendable(network, timestep=0, filename=None):
         plt.close()
 
 # make a line loading plot
-plot_line_loading(network)
+#plot_line_loading(network)
 
 # make a line_extendable plot
-plot_lines_extendable(network)
+plot_lines_extendable(network, filename='extend_lines.pdf')
 
-gen_dist(network)
+#gen_dist(network)
 
 # plot stacked sum of nominal power for each generator type and timestep
-plot_stacked_gen(network, resolution="MW")
+#plot_stacked_gen(network, resolution="MW")
 
 # plot to show extendable storages
-storage_distribution(network)
+#storage_distribution(network)
 
 
 # close session
