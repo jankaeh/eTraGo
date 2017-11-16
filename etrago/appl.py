@@ -38,25 +38,25 @@ args = {# Setup and Configuration:
         'gridversion': 'v0.2.11', # None for model_draft or Version number (e.g. v0.2.11) for grid schema
         'method': 'lopf', # lopf or pf
         'pf_post_lopf': False, # state whether you want to perform a pf after a lopf simulation
-        'start_snapshot': 1, 
-        'end_snapshot' : 24,
-        'scn_name': 'SH Status Quo', # state which scenario you want to run: Status Quo, NEP 2035, eGo100
+        'start_snapshot': 3482, 
+        'end_snapshot' : 3683,
+        'scn_name': 'Status Quo', # state which scenario you want to run: Status Quo, NEP 2035, eGo100
         'solver': 'gurobi', # glpk, cplex or gurobi
         # Export options:
         'lpfile': False, # state if and where you want to save pyomo's lp file: False or /path/tofolder
         'results': False, # state if and where you want to save results as csv: False or /path/tofolder
         'export': False, # state if you want to export the results back to the database
         # Settings:        
-        'storage_extendable':True, # state if you want storages to be installed at each node if necessary.
+        'storage_extendable':False, # state if you want storages to be installed at each node if necessary.
         'generator_noise':True, # state if you want to apply a small generator noise 
-        'reproduce_noise': False, # state if you want to use a predefined set of random noise for the given scenario. if so, provide path, e.g. 'noise_values.csv'
+        'reproduce_noise': True, # state if you want to use a predefined set of random noise for the given scenario. if so, provide path, e.g. 'noise_values.csv'
         'minimize_loading':False,
         'lines_extendable':True,
         # Clustering:
-        'k_mean_clustering': 140, # state if you want to perform a k-means clustering on the given network. State False or the value k (e.g. 20).
+        'k_mean_clustering': False, # state if you want to perform a k-means clustering on the given network. State False or the value k (e.g. 20).
         'network_clustering': False, # state if you want to perform a clustering of HV buses to EHV buses.
         # Simplifications:
-        'parallelisation':False, # state if you want to run snapshots parallely.
+        'parallelisation':True, # state if you want to run snapshots parallely.
         'line_grouping': False, # state if you want to group lines running between the same buses.
         'branch_capacity_factor': 1, # globally extend or lower branch capacities
         'load_shedding':False, # meet the demand at very high cost; for debugging purposes.
