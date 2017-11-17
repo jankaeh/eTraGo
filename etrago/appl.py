@@ -49,7 +49,7 @@ args = {# Setup and Configuration:
         # Settings:        
         'storage_extendable':False, # state if you want storages to be installed at each node if necessary.
         'generator_noise':True, # state if you want to apply a small generator noise 
-        'reproduce_noise': True, # state if you want to use a predefined set of random noise for the given scenario. if so, provide path, e.g. 'noise_values.csv'
+        'reproduce_noise': False, # state if you want to use a predefined set of random noise for the given scenario. if so, provide path, e.g. 'noise_values.csv'
         'minimize_loading':False,
         'lines_extendable':True,
         # Clustering:
@@ -320,8 +320,8 @@ def etrago(args):
         
     # write lpfile to path
     if not args['lpfile'] == True:
-        network.model.write(args['lpfile'], io_options={'symbolic_solver_labels':
-                                                     True})
+        network.model.write(args['lpfile'], io_options={'symbolic_solver_labels':True})
+
     # write PyPSA results back to database
     if args['export']:
         results_to_oedb(session, network, args, 'hv')  
