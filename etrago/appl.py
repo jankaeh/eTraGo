@@ -39,11 +39,11 @@ args = {# Setup and Configuration:
         'method': 'lopf', # lopf or pf
         'pf_post_lopf': False, # state whether you want to perform a pf after a lopf simulation
         'start_snapshot': 3482, 
-        'end_snapshot' : 3683,
-        'scn_name': 'Status Quo', # state which scenario you want to run: Status Quo, NEP 2035, eGo100
+        'end_snapshot' : 3483,
+        'scn_name': 'SH Status Quo', # state which scenario you want to run: Status Quo, NEP 2035, eGo100
         'solver': 'gurobi', # glpk, cplex or gurobi
         # Export options:
-        'lpfile': False, # state if and where you want to save pyomo's lp file: False or /path/tofolder
+        'lpfile': None, # state if and where you want to save pyomo's lp file: False or /path/tofolder
         'results': False, # state if and where you want to save results as csv: False or /path/tofolder
         'export': False, # state if you want to export the results back to the database
         # Settings:        
@@ -347,6 +347,7 @@ network = etrago(args)
 
 # plots
  #Graph of the s_nom_extendable
+import matplotlib.pyplot as plt
 def plot_lines_extendable(network, timestep=0, filename=None):
         
     loading = abs(((network.lines.s_nom_opt-network.lines.s_nom)/network.lines.s_nom)*100)
