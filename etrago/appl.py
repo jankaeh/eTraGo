@@ -39,19 +39,19 @@ args = {# Setup and Configuration:
         'method': 'lopf', # lopf or pf
         'pf_post_lopf': False, # state whether you want to perform a pf after a lopf simulation
         'start_snapshot': 3482, 
-        'end_snapshot' : 3483,
-        'scn_name': 'SH Status Quo', # state which scenario you want to run: Status Quo, NEP 2035, eGo100
+        'end_snapshot' : 3505,
+        'scn_name': 'Status Quo', # state which scenario you want to run: Status Quo, NEP 2035, eGo100
         'solver': 'gurobi', # glpk, cplex or gurobi
         # Export options:
-        'lpfile': None, # state if and where you want to save pyomo's lp file: False or /path/tofolder
+        'lpfile': '/home/openego/pf_results/file.lp', # state if and where you want to save pyomo's lp file: False or /path/tofolder
         'results': False, # state if and where you want to save results as csv: False or /path/tofolder
         'export': False, # state if you want to export the results back to the database
         # Settings:        
         'storage_extendable':False, # state if you want storages to be installed at each node if necessary.
         'generator_noise':True, # state if you want to apply a small generator noise 
-        'reproduce_noise': False, # state if you want to use a predefined set of random noise for the given scenario. if so, provide path, e.g. 'noise_values.csv'
+        'reproduce_noise':True , # state if you want to use a predefined set of random noise for the given scenario. if so, provide path, e.g. 'noise_values.csv'
         'minimize_loading':False,
-        'lines_extendable':True,
+        'lines_extendable':False,
         # Clustering:
         'k_mean_clustering': False, # state if you want to perform a k-means clustering on the given network. State False or the value k (e.g. 20).
         'network_clustering': False, # state if you want to perform a clustering of HV buses to EHV buses.
@@ -214,10 +214,10 @@ def etrago(args):
     
 #==============================================================================
 #     # Reset s_nom of lines and transformers
-#     lines_new_s_nom = genfromtxt('list_lines_opt.csv', delimiter=',')
-#     network.lines.s_nom = lines_new_s_nom
-#     transformers_new_s_nom = genfromtxt('list_transformers_opt.csv', delimiter=',')
-#     network.transformers.s_nom = transformers_new_s_nom
+    lines_new_s_nom = genfromtxt('list_lines_opt.csv', delimiter=',')
+    network.lines.s_nom = lines_new_s_nom
+    transformers_new_s_nom = genfromtxt('list_transformers_opt.csv', delimiter=',')
+    network.transformers.s_nom = transformers_new_s_nom
 #==============================================================================
           
     # TEMPORARY vague adjustment due to transformer bug in data processing
@@ -353,7 +353,7 @@ def plot_lines_extendable(network, timestep=0, filename=None):
     loading = abs(((network.lines.s_nom_opt-network.lines.s_nom)/network.lines.s_nom)*100)
         
     # do the plotting
-    ll = network.plot(line_colors=abs(loading), line_cmap=plt.cm.jet,
+    ll = network.plot(line_colors=abs(loading),bus_sizes=0,line_widths=0.5, line_cmap=plt.cm.jet,
                           title="lines.s_nom_extendable")
     
     # add colorbar, note mappable sliced from ll by [1]
@@ -369,7 +369,7 @@ def plot_lines_extendable(network, timestep=0, filename=None):
 #plot_line_loading(network)
 
 # make a line_extendable plot
-plot_lines_extendable(network, filename='extend_lines.pdf')
+#plot_lines_extendable(network, filename='extend_lines.pdf')
 
 #gen_dist(network)
 
