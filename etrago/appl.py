@@ -35,11 +35,11 @@ from etrago.cluster.networkclustering import busmap_from_psql, cluster_on_extra_
 
 args = {# Setup and Configuration:
         'db': 'oedb', # db session
-        'gridversion': 'v0.2.11', # None for model_draft or Version number (e.g. v0.2.11) for grid schema
+        'gridversion': None, # None for model_draft or Version number (e.g. v0.2.11) for grid schema
         'method': 'lopf', # lopf or pf
         'pf_post_lopf': False, # state whether you want to perform a pf after a lopf simulation
-        'start_snapshot': 3482, 
-        'end_snapshot' : 3505,
+        'start_snapshot': 1, 
+        'end_snapshot' : 500,
         'scn_name': 'Status Quo', # state which scenario you want to run: Status Quo, NEP 2035, eGo100
         'solver': 'gurobi', # glpk, cplex or gurobi
         # Export options:
@@ -49,16 +49,16 @@ args = {# Setup and Configuration:
         # Settings:        
         'storage_extendable':False, # state if you want storages to be installed at each node if necessary.
         'generator_noise':True, # state if you want to apply a small generator noise 
-        'reproduce_noise':True , # state if you want to use a predefined set of random noise for the given scenario. if so, provide path, e.g. 'noise_values.csv'
+        'reproduce_noise':False , # state if you want to use a predefined set of random noise for the given scenario. if so, provide path, e.g. 'noise_values.csv'
         'minimize_loading':False,
-        'lines_extendable':False,
+        'lines_extendable':True,
         # Clustering:
         'k_mean_clustering': False, # state if you want to perform a k-means clustering on the given network. State False or the value k (e.g. 20).
         'network_clustering': False, # state if you want to perform a clustering of HV buses to EHV buses.
         # Simplifications:
         'parallelisation':True, # state if you want to run snapshots parallely.
         'line_grouping': False, # state if you want to group lines running between the same buses.
-        'branch_capacity_factor': 1, # globally extend or lower branch capacities
+        'branch_capacity_factor': 0.7, # globally extend or lower branch capacities
         'load_shedding':False, # meet the demand at very high cost; for debugging purposes.
         'comments':None }
 
@@ -369,7 +369,7 @@ def plot_lines_extendable(network, timestep=0, filename=None):
 #plot_line_loading(network)
 
 # make a line_extendable plot
-#plot_lines_extendable(network, filename='extend_lines.pdf')
+plot_lines_extendable(network, filename='extend_lines.pdf')
 
 #gen_dist(network)
 
