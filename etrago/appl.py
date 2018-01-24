@@ -46,12 +46,12 @@ args = {# Setup and Configuration:
         'gridversion': None, # None for model_draft or Version number (e.g. v0.2.11) for grid schema
         'method': 'lopf', # lopf or pf
         'pf_post_lopf': False, # state whether you want to perform a pf after a lopf simulation
-        'start_snapshot': 1, 
-        'end_snapshot' : 500,
+        'start_snapshot': 1417, 
+        'end_snapshot' : 2160,
         'scn_name': 'Status Quo', # state which scenario you want to run: Status Quo, NEP 2035, eGo100
         'solver': 'gurobi', # glpk, cplex or gurobi
         # Export options:
-        'lpfile': '/home/openego/pf_results/file.lp', # state if and where you want to save pyomo's lp file: False or /path/tofolder
+        'lpfile': '/home/openego/pf_results/file_mrz.lp', # state if and where you want to save pyomo's lp file: False or /path/tofolder
         'results': False, # state if and where you want to save results as csv: False or /path/tofolder
         'export': False, # state if you want to export the results back to the database
         # Settings:        
@@ -65,6 +65,7 @@ args = {# Setup and Configuration:
         'network_clustering': False, # state if you want to perform a clustering of HV buses to EHV buses.
         # Simplifications:
         'parallelisation':True, # state if you want to run snapshots parallely.
+        'skip_snapshots':False,
         'line_grouping': False, # state if you want to group lines running between the same buses.
         'branch_capacity_factor': 0.7, # globally extend or lower branch capacities
         'load_shedding':False, # meet the demand at very high cost; for debugging purposes.
@@ -221,10 +222,10 @@ def etrago(args):
     
 #==============================================================================
 #     # Reset s_nom of lines and transformers
-    lines_new_s_nom = genfromtxt('list_lines_opt.csv', delimiter=',')
-    network.lines.s_nom = lines_new_s_nom
-    transformers_new_s_nom = genfromtxt('list_transformers_opt.csv', delimiter=',')
-    network.transformers.s_nom = transformers_new_s_nom
+#    lines_new_s_nom = genfromtxt('list_lines_opt.csv', delimiter=',')
+#    network.lines.s_nom = lines_new_s_nom
+#    transformers_new_s_nom = genfromtxt('list_transformers_opt.csv', delimiter=',')
+#    network.transformers.s_nom = transformers_new_s_nom
 #==============================================================================
           
 
@@ -380,11 +381,11 @@ if __name__ == '__main__':
     network = etrago(args)
     # plots
     # make a line loading plot
-    plot_line_loading(network)
+    #plot_line_loading(network)
     # plot stacked sum of nominal power for each generator type and timestep
-    plot_stacked_gen(network, resolution="MW")
+    #plot_stacked_gen(network, resolution="MW")
     # plot to show extendable storages
-    storage_distribution(network)
+    #storage_distribution(network)
     # make a line_extendable plot
     plot_lines_extendable(network, filename='extend_lines.pdf')
 
