@@ -46,12 +46,12 @@ args = {# Setup and Configuration:
         'gridversion': None, # None for model_draft or Version number (e.g. v0.2.11) for grid schema
         'method': 'lopf', # lopf or pf
         'pf_post_lopf': False, # state whether you want to perform a pf after a lopf simulation
-        'start_snapshot': 1, 
-        'end_snapshot' : 168,
+        'start_snapshot': 48, 
+        'end_snapshot' : 96,
         'scn_name': 'Status Quo', # state which scenario you want to run: Status Quo, NEP 2035, eGo100
         'solver': 'gurobi', # glpk, cplex or gurobi
         # Export options:
-        'lpfile': '/home/openego/pf_results/file.lp', # state if and where you want to save pyomo's lp file: False or /path/tofolder
+        'lpfile': False, # state if and where you want to save pyomo's lp file: False or /path/tofolder
         'results': False, # state if and where you want to save results as csv: False or /path/tofolder
         'export': False, # state if you want to export the results back to the database
         # Settings:        
@@ -284,10 +284,10 @@ def etrago(args):
         # set ALL lines and transformers to be extendable
         network.lines.s_nom_extendable = True
         network.lines.s_nom_min = network.lines.s_nom
-        network.lines.s_nom_max = float ("+inf")
+        network.lines.s_nom_max = 100000
         network.transformers.s_nom_extendable = True
         network.transformers.s_nom_min = network.transformers.s_nom
-        network.transformers.s_nom_max = float ("+inf")
+        network.transformers.s_nom_max = 100000
         
         # set line capital costs 
         network.lines.capital_cost = 1000000 
@@ -351,8 +351,8 @@ def etrago(args):
         list_lines_opt.append(round(network.lines.s_nom_opt,1))
         list_transformers_opt.append(round(network.transformers.s_nom_opt,1))
         # Save the list as csv
-        np.savetxt('list_lines_opt_firstweek.csv',list_lines_opt, delimiter=",")
-        np.savetxt('list_transformers_opt_firstweek.csv',list_transformers_opt, delimiter=",")
+        np.savetxt('list_lines_opt_2nd2days.csv',list_lines_opt, delimiter=",")
+        np.savetxt('list_transformers_opt_2nd2days.csv',list_transformers_opt, delimiter=",")
     
     return network
 
